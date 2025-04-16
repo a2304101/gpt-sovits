@@ -1,0 +1,52 @@
+ffmpeg -i b(1).m4a -acodec libmp3lame b(1).wav
+ffmpeg -i 162.mp4 -i 162.mp3 -c copy -map 0:v:0 -map 1:a:0 1621.mp4
+ffmpeg -i 1621.mp4 -i 162.srt -c copy -c:s mov_text 16211.mp4
+ffmpeg -i "b1.wav" -ss 0 -to 100 "b1cut.wav"
+
+!git clone https://github.com/RVC-Boss/GPT-SoVITS.git
+%cd GPT-SoVITS
+!apt-get update && apt-get install -y --no-install-recommends tzdata ffmpeg libsox-dev parallel aria2 git git-lfs && git lfs install
+!pip install -r requirements.txt
+!pip install -r extra-req.txt --no-deps
+
+!mkdir -p /kaggle/working/GPT-SoVITS/GPT_SoVITS/pretrained_models
+!mkdir -p /kaggle/working/GPT-SoVITS/tools/asr/models
+!mkdir -p /kaggle/working/GPT-SoVITS/tools/uvr5
+%cd /kaggle/working/GPT-SoVITS/GPT_SoVITS/pretrained_models
+!git clone https://huggingface.co/lj1995/GPT-SoVITS
+%cd /kaggle/working/GPT-SoVITS/tools/asr/models
+!git clone https://www.modelscope.cn/damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch.git
+!git clone https://www.modelscope.cn/damo/speech_fsmn_vad_zh-cn-16k-common-pytorch.git
+!git clone https://www.modelscope.cn/damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch.git
+
+uvr5
+%cd /kaggle/working/GPT-SoVITS/tools/uvr5/uvr5_weights
+!git clone https://huggingface.co/Delik/uvr5_weights
+!git config core.sparseCheckout true
+自改
+!mv /kaggle/working/GPT-SoVITS/GPT_SoVITS/pretrained_models/GPT-SoVITS/* /kaggle/working/GPT-SoVITS/GPT_SoVITS/pretrained_models
+
+import os
+os.environ['is_share']="True" os.environ.get('is_share')
+!python -m nltk.downloader averaged_perceptron_tagger_eng
+nltk.set_proxy('http://127.0.0.1:7890', ('', ''))
+nltk.download('averaged_perceptron_tagger_eng')
+
+%cd /kaggle/working/GPT-SoVITS
+%mv webui.py webui1.py
+import shutil
+shutil.copy('/kaggle/input/testqq/webui.py', '/kaggle/working/GPT-SoVITS')
+轉webui.py
+
+!/usr/local/bin/pip install ipykernel
+!sed -i '10s/False/True/' /kaggle/working/GPT-SoVITS/config.py
+%cd /kaggle/working/GPT-SoVITS
+!/usr/local/bin/python webui.py
+
+from distutils.dir_util import copy_tree
+copy_tree('/kaggle/input/b1-vocal/b1_vocal','/kaggle/working/GPT-SoVITS/output/slicer_opt')
+
+%mkdir /kaggle/working/GPT-SoVITS/output
+%mkdir /kaggle/working/GPT-SoVITS/output/slicer_opt
+%mkdir /kaggle/working/GPT-SoVITS/output/asr_opt
+%mkdir /kaggle/working/GPT-SoVITS/output/uvr5_opt
